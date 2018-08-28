@@ -2,6 +2,11 @@ export interface ExtendedKeyboardEvent extends KeyboardEvent {
     returnValue: boolean; // IE returnValue
 }
 
+export interface IHotkeyDescription {
+    areaName?: string;
+    helpText: string;
+}
+
 export class Hotkey {
     _formatted: string[];
 
@@ -30,26 +35,25 @@ export class Hotkey {
 
             comboSplit[i] = map[comboSplit[i]] || comboSplit[i];
         }
-
         return comboSplit.join(' + ');
     }
 
     /**
      * Creates a new Hotkey for Mousetrap binding
      *
-     * @param {string}   combo       mousetrap key binding
-     * @param {string}   description description for the help menu
-     * @param {Function} callback    method to call when key is pressed
-     * @param {string}   action      the type of event to listen for (for mousetrap)
-     * @param {array}    allowIn     an array of tag names to allow this combo in ('INPUT', 'SELECT', and/or 'TEXTAREA')
-     * @param {boolean}  persistent  if true, the binding is preserved upon route changes
+     * @param {string}               combo       mousetrap key binding
+     * @param {IHotkeyDescription}   descriptionPair description for the help menu (area for grouping of hotkeys and description to show as help text)
+     * @param {Function}             callback    method to call when key is pressed
+     * @param {string}               action      the type of event to listen for (for mousetrap)
+     * @param {array}                allowIn     an array of tag names to allow this combo in ('INPUT', 'SELECT', and/or 'TEXTAREA')
+     * @param {boolean}              persistent  if true, the binding is preserved upon route changes
      */
     constructor(public combo: string | string[], public callback: (event: KeyboardEvent, combo: string) => ExtendedKeyboardEvent | boolean,
-                public allowIn?: string[], public description?: string | Function, public action?: string,
+                public allowIn?: string[], public descriptionPair?: IHotkeyDescription, public action?: string,
                 public persistent?: boolean) {
         this.combo = (Array.isArray(combo) ? combo : [<string>combo]);
         this.allowIn = allowIn || [];
-        this.description = description || '';
+        this.descriptionPair = descriptionPair;
     }
 
     get formatted(): string[] {

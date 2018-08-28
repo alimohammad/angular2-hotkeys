@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { HotkeysService } from './hotkeys.service';
 import { Hotkey } from './hotkey.model';
+import * as _ from "lodash";
 
 @Component({
   selector: 'hotkeys-cheatsheet',
@@ -54,15 +55,15 @@ import { Hotkey } from './hotkey.model';
     }
     
     table.left {
-      margin-left: 10% !important;
+      margin-left: 5% !important;
       margin-right: 50% !important;
     }
     
     table.right {
-      margin-right: 10% !important;
+      margin-right: 5% !important;
       margin-left: 50% !important;
     }
-    
+
     .cfp-content {
       display: table-cell;
       vertical-align: middle;
@@ -121,27 +122,36 @@ import { Hotkey } from './hotkey.model';
         font-size: 1.2em;
       }
     }`],
-  template: `<div class="cfp-hotkeys-container fade" [ngClass]="{'in': helpVisible}" style="display:none"><div class="cfp-hotkeys">
-    <h4 class="cfp-hotkeys-title">{{ title }}</h4>
-    <table class="left"><tbody>
-        <tr *ngFor="let hotkey of leftSide">
-          <td class="cfp-hotkeys-keys">
-            <span *ngFor="let key of hotkey.formatted" class="cfp-hotkeys-key">{{ key }}</span>
-          </td>
-          <td class="cfp-hotkeys-text">{{ hotkey.description }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <table class="right"><tbody>
-          <tr *ngFor="let hotkey of rightSide">
-            <td class="cfp-hotkeys-keys">
-              <span *ngFor="let key of hotkey.formatted" class="cfp-hotkeys-key">{{ key }}</span>
-            </td>
-            <td class="cfp-hotkeys-text">{{ hotkey.description }}</td>
-          </tr>
-        </tbody>
+  template: `<div class="cfp-hotkeys-container fade" [ngClass]="{'in': helpVisible}" style="display:none">
+  <div class="cfp-hotkeys">
+      <h4 class="cfp-hotkeys-title">{{ title }}</h4>
+      <table class="left" *ngFor="let group of leftSide">
+          <thead>
+              <th>{{group.key}}</th>
+          </thead>
+          <tbody>
+              <tr *ngFor="let hotkey of group.value">
+                  <td class="cfp-hotkeys-keys">
+                      <span *ngFor="let key of hotkey.formatted" class="cfp-hotkeys-key">{{ key }}</span>
+                  </td>
+                  <td class="cfp-hotkeys-text">{{ hotkey.descriptionPair.helpText }}</td>
+              </tr>
+          </tbody>
       </table>
-    <div class="cfp-hotkeys-close" (click)="toggleCheatSheet()">&#215;</div>
+      <table class="right" *ngFor="let group of rightSide">
+          <thead>
+              <th>{{group.key}}</th>
+          </thead>
+          <tbody>
+              <tr *ngFor="let hotkey of group.value">
+                  <td class="cfp-hotkeys-keys">
+                      <span *ngFor="let key of hotkey.formatted" class="cfp-hotkeys-key">{{ key }}</span>
+                  </td>
+                  <td class="cfp-hotkeys-text">{{ hotkey.descriptionPair.helpText }}</td>
+              </tr>
+          </tbody>
+      </table>
+      <div class="cfp-hotkeys-close" (click)="toggleCheatSheet()">&#215;</div>
   </div>
 </div>`
 })
@@ -149,7 +159,6 @@ export class CheatSheetComponent implements OnInit, OnDestroy {
   helpVisible = false;
   @Input() title: string = 'Keyboard Shortcuts:';
   subscription: Subscription;
-
   leftSide: Hotkey[];
   rightSide: Hotkey[];
 
@@ -159,10 +168,11 @@ export class CheatSheetComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.subscription = this.hotkeysService.cheatSheetToggle.subscribe((isOpen: boolean) => {
       if (isOpen !== false) {
-        const hotkeys = this.hotkeysService.hotkeys.filter(hotkey => hotkey.description);
-        const half = Math.ceil(hotkeys.length / 2);
-        this.leftSide = hotkeys.splice(0, half);
-        this.rightSide = hotkeys;
+        let hotkeyGroups = _.groupBy(this.hotkeysService.hotkeys, "descriptionPair.areaName");
+        let hotkeysArray = this.transform(hotkeyGroups);
+        const half = Math.ceil(hotkeysArray.length / 2);
+        this.leftSide = hotkeysArray.splice(0, half);
+        this.rightSide = hotkeysArray;
       }
 
       if (isOpen === false) {
@@ -181,5 +191,13 @@ export class CheatSheetComponent implements OnInit, OnDestroy {
 
   public toggleCheatSheet(): void {
     this.helpVisible = !this.helpVisible;
+  }
+
+  public transform(value: any, args?:string[]) : any {
+    let arr = [];
+    for (let key in value) {
+      arr.push({key: key, value: value[key]});
+    }
+    return arr;
   }
 }
