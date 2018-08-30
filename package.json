@@ -1,6 +1,6 @@
 {
   "name": "ngx-hotkeys",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "scripts": {
     "lint": "tslint src/**/*.ts",
     "test": "tsc && karma start",
