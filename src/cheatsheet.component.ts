@@ -108,6 +108,7 @@ import * as _ from "lodash";
 
       .cfp-hotkeys .hotkey-container {
         height: calc(100vh - 100px);
+        width: calc(100vw - 10px);
         display: flex;
         overflow-y: auto;
         flex-wrap: nowrap;
